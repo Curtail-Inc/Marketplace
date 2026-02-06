@@ -12,8 +12,8 @@
     {
       "name": "regrade",
       "source": {
-        "source": "github",
-        "repo": "Curtail-Inc/Marketplace"
+        "source": "url",
+        "url": "https://github.com/Curtail-Inc/Marketplace.git"
       },
       "description": "Automated bug detection via replay differential testing. Analyzes API response differences between software versions to identify regressions, code bugs, and unintended behavior changes.",
       "version": "1.0.0",
