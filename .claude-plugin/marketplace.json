@@ -1,0 +1,26 @@
+{
+  "name": "regrade",
+  "owner": {
+    "name": "Curtail",
+    "email": "support@curtail.com"
+  },
+  "metadata": {
+    "description": "ReGrade plugin marketplace for automated bug detection via replay differential testing",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "regrade",
+      "source": {
+        "source": "github",
+        "repo": "Curtail-Inc/Marketplace"
+      },
+      "description": "Automated bug detection via replay differential testing. Analyzes API response differences between software versions to identify regressions, code bugs, and unintended behavior changes.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Curtail",
+        "email": "support@curtail.com"
+      }
+    }
+  ]
+}

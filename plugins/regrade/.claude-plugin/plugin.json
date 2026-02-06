@@ -1,0 +1,9 @@
+{
+  "name": "regrade",
+  "description": "Automated bug detection via replay differential testing. Analyzes API response differences between software versions to identify regressions, code bugs, and unintended behavior changes.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Curtail",
+    "email": "support@curtail.com"
+  }
+}

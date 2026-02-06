@@ -1,0 +1,7 @@
+{
+  "regrade": {
+    "command": "bash",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-bridge.sh"],
+    "env": {}
+  }
+}
