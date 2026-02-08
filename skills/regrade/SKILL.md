@@ -45,6 +45,12 @@ regrade replay --rec-id <recording-id> --target http://new-version:8080
 - `create_id_mapping` - Set up ID mappings for dynamic identifiers
 - `create_profile` - Create a new app profile
 
+**Available MCP resources (URI-addressable data):**
+- `regrade://recordings/{id}/requests/{index}` - Get HAR entry from recording
+- `regrade://replays/{id}/requests/{index}` - Compare original vs replay request with deltas
+- `regrade://replays/{id}/deltas` - List all deltas in replay (paginated)
+- `regrade://replays/{id}/deltas/{delta_id}` - Get specific delta details
+
 **How to use MCP tools:**
 When this skill is active, these tools are available in your function list. Use them directly, NOT as bash commands.
 
@@ -97,6 +103,12 @@ Use MCP tools directly as function calls:
 - `create_profile_filter_rule()` - Add filter rules
 - `create_id_mapping()` - Configure ID mappings
 - `create_profile()` - Create app profiles
+
+**MCP Resources (URI-addressable, use for browsing):**
+- `regrade://recordings/{id}/requests/{index}` - Browse recording HAR entries
+- `regrade://replays/{id}/requests/{index}` - Compare original vs replay requests
+- `regrade://replays/{id}/deltas` - Browse replay deltas
+- `regrade://replays/{id}/deltas/{delta_id}` - Inspect specific delta
 
 ### When to Guide Developers to Use the CLI
 
