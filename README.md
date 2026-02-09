@@ -21,16 +21,21 @@ The plugin provides the `/regrade:regrade` skill for automated bug detection and
 
 ## Configuration
 
-**Default Settings (Cloud):**
-- `REGRADE_API_URL` → `https://api.regrade.curtail.com`
-- `REGRADE_KEY_FILE` → `$HOME/.regrade/key`
-
-**No configuration needed for cloud use!**
-
-**For local development:**
+**Required:**
 ```bash
-export REGRADE_API_URL="http://localhost"
+# Set your ReGrade API key
+export REGRADE_API_KEY="sk_live_..."
 ```
+
+**Optional:**
+```bash
+# Override API URL (default: https://api.regrade.curtail.com)
+export REGRADE_API_URL="http://localhost:8080"
+```
+
+**Tip:** Add these to your shell profile (`~/.zshrc`, `~/.bashrc`) to persist across sessions.
+
+The plugin connects directly to the ReGrade HTTP MCP endpoint using your API key for authentication.
 
 ## What It Does
 

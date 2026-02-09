@@ -1,7 +1,11 @@
 {
-  "regrade": {
-    "command": "bash",
-    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-bridge.sh"],
-    "env": {}
+  "mcpServers": {
+    "regrade": {
+      "type": "http",
+      "url": "${REGRADE_API_URL:-https://api.regrade.curtail.com}/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${REGRADE_API_KEY}"
+      }
+    }
   }
 }
