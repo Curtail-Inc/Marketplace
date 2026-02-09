@@ -4,7 +4,42 @@ AI-powered bug detection via replay differential testing.
 
 ## Installation
 
-This plugin is part of the ReGrade marketplace. See the marketplace README for installation instructions.
+### Prerequisites
+- Claude Code CLI installed and configured
+- Linux x86_64 system (for sensor binary)
+
+### Quick Start
+
+1. **Sign Up** - Get your API key at https://app.regrade.curtail.com/free-trial
+
+2. **Install Plugin**
+   ```bash
+   # Add marketplace and install plugin
+   claude plugin marketplace add https://app.regrade.curtail.com/downloads/latest/marketplace.json
+   claude plugin install regrade@regrade --scope user
+   ```
+
+3. **Install Sensor Binary**
+   ```bash
+   # Linux x86_64
+   curl -LO https://app.regrade.curtail.com/downloads/latest/regrade-linux-x86_64
+   chmod +x regrade-linux-x86_64
+   mv regrade-linux-x86_64 ~/.local/bin/regrade
+   ```
+
+4. **Configure API Key**
+   ```bash
+   export REGRADE_API_KEY="your-api-key-here"
+   echo 'export REGRADE_API_KEY="your-api-key-here"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+5. **Verify Installation**
+   ```bash
+   claude plugins list  # Should show: ❯ regrade@regrade
+   /mcp                 # Should show "regrade" MCP server
+   regrade --version    # Should show: regrade 0.x.x
+   ```
 
 ## Using the Plugin
 
@@ -21,21 +56,16 @@ The plugin provides the `/regrade:regrade` skill for automated bug detection and
 
 ## Configuration
 
-**Required:**
+The plugin connects to the ReGrade cloud API using your API key:
 ```bash
-# Set your ReGrade API key
 export REGRADE_API_KEY="sk_live_..."
 ```
 
-**Optional:**
+Add to your shell profile for persistence:
 ```bash
-# Override API URL (default: https://api.regrade.curtail.com)
-export REGRADE_API_URL="http://localhost:8080"
+echo 'export REGRADE_API_KEY="sk_live_..."' >> ~/.bashrc
+source ~/.bashrc
 ```
-
-**Tip:** Add these to your shell profile (`~/.zshrc`, `~/.bashrc`) to persist across sessions.
-
-The plugin connects directly to the ReGrade HTTP MCP endpoint using your API key for authentication.
 
 ## What It Does
 
@@ -56,14 +86,14 @@ The plugin connects directly to the ReGrade HTTP MCP endpoint using your API key
 The plugin analyzes replays created by the ReGrade CLI:
 
 ```bash
-# Record traffic
-regrade proxy --target http://api:8080 --port 8888
+# Record traffic from your application
+regrade proxy --target https://api.example.com --port 8888
 
-# Replay against new version
-regrade replay --rec-id <recording-id> --target http://new-version:8080
+# Replay against a new version
+regrade replay --rec-id <recording-id> --target https://staging.example.com
 ```
 
-Then use this plugin via Claude Code to analyze the deltas.
+Then use this plugin via Claude Code to analyze the deltas and identify bugs.
 
 ## Support
 
