@@ -237,7 +237,7 @@ No unexplained differences that appear to be environment-specific.
 
 #### 2. Label URL Format Differences (Environment)
 - **Pattern:** `\.url$`
-- **Delta Types:** value_mismatch, extra
+- **Delta Types:** response_body_difference, extra_field
 - **Action:** LABEL as `environment-url-format`
 - **Rationale:** Relative vs absolute URLs - environment difference
 
@@ -247,7 +247,7 @@ No unexplained differences that appear to be environment-specific.
 - **Rationale:** All content deltas on paginated endpoint are consequences of ignored parameter
 
 #### 4. Label Asset Version Changes
-- **Pattern:** URL ends with `.js`, `.css`, or `.map`, status_mismatch
+- **Pattern:** URL ends with `.js`, `.css`, or `.map`, status_code_mismatch
 - **Action:** LABEL as `asset-version-change`
 - **Rationale:** Asset hashes change between versions - expected
 

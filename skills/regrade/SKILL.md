@@ -365,7 +365,7 @@ For **Asset Hashes:**
 query_deltas(
   replay_id=replay_id,
   location_path_pattern="@src|@href|script.*src|link.*href|url",
-  delta_type=["value_mismatch"],
+  delta_type=["response_body_difference"],
   group_by="none",
   limit=10
 )
@@ -385,7 +385,7 @@ For **Entity IDs:**
 query_deltas(
   replay_id=replay_id,
   location_path_pattern="^\\..*\\.id$|^\\..*_id$",
-  delta_type=["value_mismatch"],
+  delta_type=["response_body_difference"],
   group_by="path",
   limit=20
 )
@@ -396,7 +396,7 @@ query_deltas(
 - Same logical entity, different ID value
 
 **Verification checklist:**
-- [ ] Found the value_mismatch delta showing OLD→NEW
+- [ ] Found the response_body_difference delta showing OLD→NEW
 - [ ] Confirmed same entity (same position in array, same semantic meaning)
 - [ ] Confirmed it's an ID, not different data
 - [ ] Extracted both old and new values
@@ -643,8 +643,8 @@ When asset files have version hashes in their filenames:
 #### What You'll See
 
 When asset hash changes occur, you'll see:
-- **status_mismatch (high):** 200→404 on asset files (JS/CSS/images)
-- **value_mismatch (low):** HTML/JSON contains new asset hash in `src`/`href` attributes
+- **status_code_mismatch (high):** 200→404 on asset files (JS/CSS/images)
+- **response_body_difference (low):** HTML/JSON contains new asset hash in `src`/`href` attributes
 
 #### Current MCP Limitation
 
@@ -702,7 +702,7 @@ When you find asset 404s (200→404 status mismatch):
    ```
    location_path_pattern="@src|@href|script.*src|link.*href"
    ```
-3. **Find OLD_HASH → NEW_HASH pattern** in value_mismatch deltas
+3. **Find OLD_HASH → NEW_HASH pattern** in response_body_difference deltas
 4. **Document the hash change** in your analysis
 5. **Explain the limitation:** Note that the MCP tool created a learning rule but URL transformation requires manual profile configuration
 6. **Provide the complete YAML** (shown above) for the developer to add to the profile
@@ -860,12 +860,12 @@ Delta types must match exactly (case-insensitive):
 
 ```yaml
 # Valid delta types:
-- value_mismatch    # Value changed
-- missing           # Field missing in replay
-- extra             # Field present in replay but not recording
-- type_mismatch     # Field type changed (string → number)
-- status_mismatch   # HTTP status code changed
-- large_content_diff # Content too large to diff
+- response_body_difference    # Response body value changed
+- response_header_difference  # Response header value changed
+- status_code_mismatch        # HTTP status code changed
+- schema_difference           # Schema/type changed
+- missing_field               # Field missing in replay
+- extra_field                 # Field present in replay but not recording
 ```
 
 ### Verification Steps
@@ -1037,7 +1037,7 @@ Before submitting your analysis, verify:
    - ✅ Different IDs at same position = likely pagination bug, not ID mismatch
 
 9. ❌ **Labeling asset 404s without finding the new hash**
-   - ✅ Search for value_mismatch showing OLD→NEW hash, create mapping
+   - ✅ Search for response_body_difference showing OLD→NEW hash, create mapping
 
 10. ❌ **Filter rules with incorrect path patterns**
     - ❌ WRONG: `path_pattern: "^\.posts\[\d+\]$"` (missing `$` prefix)
