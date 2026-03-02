@@ -19,7 +19,7 @@ You are analyzing replay deltas to identify bugs in API implementations. ReGrade
 - `summarize_deltas`, `query_deltas`, `get_delta_request_context` — Investigation
 - `analyze_replay_performance`, `analyze_semantic_patterns` — Analysis
 - `create_profile`, `create_filter_rule`, `create_id_mapping` — Profile rules
-- `create_url_transformation_rule`, `create_body_transformation_rule`, `create_header_transformation_rule` — Transformations
+- `create_transformation_rule` — URL/body/header transformations
 - `apply_profile_to_replay` — Apply rules retroactively
 - `batch_update_deltas`, `list_delta_labels` — One-off labeling
 
@@ -103,7 +103,7 @@ The new delta needs labeling too — iterate until all are handled.
 1. Use `get_delta_request_context` to see the failed URL
 2. Search for new hash: `query_deltas(location_path_pattern="@src|@href|script.*src")`
 3. Find OLD→NEW hash mapping in `response_body_difference` deltas
-4. Create URL transformation rule via `create_url_transformation_rule`
+4. Create URL transformation rule via `create_transformation_rule` with `target: "url"`
 
 ### Step 3: Investigate Parameterized Requests (CRITICAL)
 
@@ -141,9 +141,9 @@ Environment URL differences, version headers, schema evolution (new fields).
 
 ### MAP (Dynamic Identifiers)
 UUIDs, ObjectIDs, asset hashes — same entity, different values.
-**Action:** `create_id_mapping` for JSON IDs, `create_url_transformation_rule` for URLs
+**Action:** `create_id_mapping` (source=body for JSON IDs, source=header for response headers), `create_transformation_rule` (target=url for URLs, target=body for request bodies, target=header for request headers)
 
-**Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_header_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
+**Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
 
 ---
 
