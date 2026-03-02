@@ -143,6 +143,8 @@ Environment URL differences, version headers, schema evolution (new fields).
 UUIDs, ObjectIDs, asset hashes — same entity, different values.
 **Action:** `create_id_mapping` for JSON IDs, `create_url_transformation_rule` for URLs
 
+**Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_header_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
+
 ---
 
 ## Troubleshooting Filter Rules
