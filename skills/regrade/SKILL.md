@@ -145,6 +145,23 @@ UUIDs, ObjectIDs, asset hashes — same entity, different values.
 
 **Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
 
+### Mapping Model: Namespace, Context, Value
+
+The sensor stores ID mappings as `recorded_value → replayed_value` pairs, organized into **namespaces** with optional **context** disambiguation.
+
+- **Namespace** — An isolated bucket of mappings for one entity type (e.g., `users`, `channels`, `asset_hashes`). The same recorded value in different namespaces maps independently.
+- **Context** — Optional key that disambiguates within a namespace. Without context, `recorded_id` maps to one value. With context (set via `context_key` on the namespace), the key becomes `context:recorded_id`, allowing the same ID to map differently per context.
+- **Value** — The recorded/replayed ID pair. Extract rules learn pairs from responses; apply rules look up recorded values to get replayed values.
+
+**Templates** in rules use `{name}` placeholders resolved from regex capture groups:
+- `value_template` — builds the recorded value to store/look up
+- `context_template` — builds the context key (if the namespace uses context)
+- `transform` — builds the output (URL/header/body) from captures + mapping outputs
+
+Extract templates also accept `{value}` (the raw matched value) and `{index}` (array position) as built-in names.
+
+The sensor validates all templates at profile load time: every `{placeholder}` must reference a defined capture name, mapping output, or built-in. Invalid references cause an immediate error before replay starts.
+
 ---
 
 ## Troubleshooting Filter Rules
