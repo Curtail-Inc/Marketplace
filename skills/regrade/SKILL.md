@@ -143,7 +143,31 @@ Environment URL differences, version headers, schema evolution (new fields).
 UUIDs, ObjectIDs, asset hashes — same entity, different values.
 **Action:** `create_id_mapping` (source=body for JSON IDs, source=header for response headers), `create_transformation_rule` (target=url for URLs, target=body for request bodies, target=header for request headers)
 
+**`create_id_mapping` ALONE DOES NOTHING to replay traffic.** It only teaches the sensor a `recorded_value → replayed_value` pairing so the *diff engine* can recognize the two as equivalent when comparing responses. It does **not** rewrite any outgoing request. If the extracted value needs to be *sent back out* on later requests — which is true for essentially every auth/session token — you MUST always also call `create_transformation_rule` (same namespace) as an immediate follow-up. Treat `create_id_mapping` + `create_transformation_rule` as ONE inseparable step for any value that gets reused in subsequent requests; never leave a session in a state where only the extraction rule exists.
+
 **Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
+
+### Auth/Session Token Mapping (Common Case)
+
+A sign-in/token endpoint returns a fresh token in its response body, and that token is then sent back as `Authorization: Bearer <token>` (or a similar header) on every subsequent request. Without a paired transformation rule, replay silently resends the **original recorded token** on every downstream request instead of the freshly-issued one — which still "works" today only because the recorded token hasn't expired yet, masking the gap until it does. This is easy to miss because nothing looks broken in the meantime: no deltas, no errors — just a session that will start failing the day the recorded token expires.
+
+1. Extract the token from the response body:
+   ```
+   create_id_mapping(profile_id, source="body", json_path="$.data.token", namespace="auth_token")
+   ```
+2. Immediately pair it with a header transform so it's actually substituted into later requests:
+   ```
+   create_transformation_rule(
+     profile_id, namespace="auth_token", target="header",
+     header_name="Authorization",
+     pattern="(?i)^Bearer\\s+(.+)$",
+     captures={"token": 1},
+     mappings=[{"namespace": "auth_token"}],
+     transform="Bearer {token}"
+   )
+   ```
+   The `captures` group supplies the *recorded* value to look up (no `value_template` needed — it defaults to the capture). Leaving `output` unset is deliberate and correct here: the sensor falls back to a literal substring replace of the looked-up recorded value with its mapped replayed value inside the rendered `transform` string, which is exactly what's wanted for a whole-token substitution. Only set an explicit `output` name (and reference `{output}` in `transform`) if the recorded value could ambiguously match more than one substring in the template.
+3. Verify it actually took effect — don't just trust that the call succeeded. Re-run the replay and check that the delta comparing the token in the response body has actually disappeared (not just gotten labeled by a filter rule). A labeled-but-still-differing token delta means the transform isn't wired up correctly (wrong namespace, wrong header pattern, or the follow-up call was skipped).
 
 ### Mapping Model: Namespace, Context, Value
 
@@ -210,5 +234,6 @@ After investigation, provide:
 6. Skipping metadata checks for parameterized requests
 7. Not running performance analysis
 8. Wrong path patterns (missing `$` prefix, unescaped regex chars)
+9. Calling `create_id_mapping` without an immediate paired `create_transformation_rule` for values reused in later requests (auth/session tokens especially) → the mapping is learned but never applied, so replay keeps resending the original recorded credential — looks fine until it expires
 
 **You are not done until every delta is labeled.**
