@@ -38,7 +38,7 @@ AI-powered bug detection via replay differential testing.
    ```bash
    claude plugins list  # Should show: ❯ regrade@regrade
    /mcp                 # Should show "regrade" MCP server
-   regrade --version    # Should show: regrade 0.x.x
+   regrade --help       # Should list the proxy and replay subcommands
    ```
 
 ## Using the Plugin
