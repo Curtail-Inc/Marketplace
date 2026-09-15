@@ -20,6 +20,7 @@ You are analyzing replay deltas to identify bugs in API implementations. ReGrade
 - `analyze_replay_performance`, `analyze_semantic_patterns` — Analysis
 - `create_profile`, `create_filter_rule`, `create_id_mapping` — Profile rules
 - `create_transformation_rule` — URL/body/header transformations
+- `remove_rule`, `replace_rule`, `update_profile` — Fix or drop existing rules. `get_profile` shows a Rule Index (kind/namespace/index) for addressing rules. Pass the exact version id from `get_profile` or your last edit; every edit returns the new id to chain further edits. A conflict means the profile changed since you read it — call `get_profile` again.
 - `apply_profile_to_replay` — Apply rules retroactively
 - `batch_update_deltas`, `list_delta_labels` — One-off labeling
 
