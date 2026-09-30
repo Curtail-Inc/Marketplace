@@ -196,6 +196,7 @@ The sensor validates all templates at profile load time: every `{placeholder}` m
 WRONG: "^\.posts\[\d+\]$"
 RIGHT: "^\\$\\.posts\\[\\d+\\]$"
 ```
+Escape the `$`: a pattern is a regex, where a bare leading `$` means end of input. A pattern starting with an unescaped `$` (such as `$.created_at` pasted from `query_deltas`) is rejected at save time, and the error gives the escaped form.
 
 **Debug workflow:**
 1. Check actual paths: `query_deltas(unlabeled_only=true, group_by="path")`
