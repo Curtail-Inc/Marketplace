@@ -10,9 +10,10 @@ You are analyzing replay deltas to identify bugs in API implementations. ReGrade
 
 ## CLI vs MCP
 
-**CLI (Bash, only two commands):**
+**CLI (Bash):**
 - `regrade proxy --target <url> --port <port>` — Record traffic
 - `regrade replay --rec-id <id> --target <url>` — Replay against new version
+- `regrade profiles export -p <name> -o f.yaml`, `regrade profiles validate -i f.yaml`, `regrade profiles import -i f.yaml [--update] [--dry-run] [-n <name>]` — Profiles as version-controlled files, only when the user keeps profiles in files. Import is create-only; `--update` creates the next version and refuses a file exported from a version that is no longer active (re-export and re-apply). `-n` overrides the file's name. Unknown keys fail with the key named; profile tags are not imported. In the analysis loop, edit profiles with the MCP tools below.
 
 **MCP tools (function calls, everything else):**
 - `list_recordings`, `list_replays`, `list_profiles` — Discovery
