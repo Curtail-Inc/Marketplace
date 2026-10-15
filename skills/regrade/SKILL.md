@@ -149,6 +149,24 @@ UUIDs, ObjectIDs, asset hashes — same entity, different values.
 
 **Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
 
+### Lists That Come Back in a Different Order (Collections)
+
+Arrays pair by position. When a list endpoint returns the same records in a different order (no `ORDER BY`, hash maps), every element is a delta, and an ID mapping on `$.data[*].id` learns the **wrong** pairs, so later requests for one record are rewritten to another. Signs: `$.data[N].*` deltas whose recorded and replayed values appear at other indexes of the same response; follow-up requests by id returning the wrong record.
+
+**Action:** declare the array as a collection with a primary key, through `update_profile` (start from `get_profile`'s JSON and add a top-level `collections` list):
+
+```json
+"collections": [
+  { "name": "api-keys", "url_pattern": "/v1/api-keys$", "path": "$.data", "primary_key": ["name"] }
+]
+```
+
+- Elements then pair by key: mappings learn from partners, matched records compare field by field at their **recorded** index (existing filter paths keep matching), order alone is never a delta, and an unpaired record is one `missing_field` / `extra_field` delta.
+- **Key choice:** use a field that is stable across environments (`name`, `slug`, `email`). `["id"]` only pairs records whose ids an earlier response already mapped; when the list is the first time the records appear, their ids are what is being learned.
+- `path` is `$` plus `.field` and `[*]` steps (`$.teams[*].members`); composite keys list several fields; `["@"]` keys an array of scalars by value.
+- A `schema_difference` delta at the array path means the replay **broke the key differently** from the recording (a duplicated key or an element without one) — a real change in what the API returns; investigate it like any schema delta.
+- Ignore `comparison: unordered_array` on namespaces: it is deprecated and does nothing.
+
 ### Auth/Session Token Mapping (Common Case)
 
 A sign-in/token endpoint returns a fresh token in its response body, and that token is then sent back as `Authorization: Bearer <token>` (or a similar header) on every subsequent request. Without a paired transformation rule, replay silently resends the **original recorded token** on every downstream request instead of the freshly-issued one — which still "works" today only because the recorded token hasn't expired yet, masking the gap until it does. This is easy to miss because nothing looks broken in the meantime: no deltas, no errors — just a session that will start failing the day the recorded token expires.
@@ -237,6 +255,6 @@ After investigation, provide:
 6. Skipping metadata checks for parameterized requests
 7. Not running performance analysis
 8. Wrong path patterns (missing `$` prefix, unescaped regex chars)
-9. Calling `create_id_mapping` without an immediate paired `create_transformation_rule` for values reused in later requests (auth/session tokens especially) → the mapping is learned but never applied, so replay keeps resending the original recorded credential — looks fine until it expires
+. Mapping ids out of a list whose order differs between recording and replay without declaring it in `collections` → positional pairing learns the wrong record for every id, and later requests address the wrong records
 
 **You are not done until every delta is labeled.**

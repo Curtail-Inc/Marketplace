@@ -396,6 +396,20 @@ create_id_mapping(
 - Change `$..id` → `$.users[*].id`
 - Add namespace to separate different ID types
 
+### Records in a List Map to the Wrong Records
+
+**Issue:** An extract rule on `$.items[*].id` pairs recorded and replayed ids by position. If the endpoint lists the same records in a different order, `rec-A` maps to the replayed id of record B, and a later `GET /items/rec-A` is rewritten to fetch B.
+
+**Fix:** Declare the array as a collection keyed by a field that identifies a record in both environments (add it with `update_profile`):
+
+```json
+"collections": [
+  { "path": "$.items", "url_pattern": "/items$", "primary_key": ["name"] }
+]
+```
+
+Elements are then paired by key for learning and comparison, so each id maps to its own record's new id, and order alone is no longer a delta. Use `["id"]` as the key only when an earlier response already mapped those ids.
+
 ### Mapped Values Still Show as Deltas
 
 **Possible causes:**
@@ -405,7 +419,7 @@ create_id_mapping(
 
 **Investigate:** Are the mapped items actually the same entity?
 - Check surrounding content
-- Verify positions in arrays match
+- Verify positions in arrays match (if the list order differs, declare it in `collections`)
 - Could be pagination bug, not ID mismatch
 
 ---
