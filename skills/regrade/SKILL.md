@@ -103,7 +103,7 @@ The new delta needs labeling too — iterate until all are handled.
 
 **For 200→404 with asset hashes:**
 1. Use `get_delta_request_context` to see the failed URL
-2. Search for new hash: `query_deltas(location_path_pattern="@src|@href|script.*src")`
+2. Search for new hash, one call per term: `query_deltas(location_path_pattern="@src")`, then `"@href"`
 3. Find OLD→NEW hash mapping in `response_body_difference` deltas
 4. Create URL transformation rule via `create_transformation_rule` with `target: "url"`
 
@@ -111,7 +111,7 @@ The new delta needs labeling too — iterate until all are handled.
 
 **For ANY endpoint with query parameters (?sort=, ?page=, ?limit=):**
 
-1. **Check metadata FIRST:** `query_deltas(location_path_pattern="meta|pagination|total|count|limit|offset|sort|order|page")`
+1. **Check metadata FIRST**, one call per term: `query_deltas(location_path_pattern="meta")`, then `"page"` (also matches `pagination`), `"total"`, `"count"`, `"limit"`, `"offset"`, `"sort"`, `"order"`. A `query_deltas` pattern is a case-insensitive literal substring, not a regex (unlike profile rule paths), so `"meta|total"` matches nothing.
 2. **Compare metadata to request params** — if they don't match, the parameter is being IGNORED (root cause bug)
 3. **Label ALL content deltas as side effects** via a profile filter rule
 
