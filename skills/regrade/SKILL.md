@@ -149,6 +149,24 @@ UUIDs, ObjectIDs, asset hashes — same entity, different values.
 
 **Namespace pairing rule:** When creating extraction + transformation pairs (e.g., `create_id_mapping` + `create_transformation_rule`), always specify the **same explicit `namespace`** on both tools. Do NOT rely on auto-generated namespace defaults — they produce names like `auto_posts_id` or `header_x_auth_token` that won't match an explicitly-named transform namespace, causing silent mapping failures.
 
+### IDs That Collide Across Resource Types (methods / url_pattern)
+
+An extract rule learns from **every** response whose body has its path. With sequential integer IDs, `GET /api/users/5` and `GET /api/teams/5` both return `{"id": 5}`, replayed as different numbers, so one `$.id` rule records `5` twice and the second pair overwrites the first. Signs: a mapped id that is right for one resource type and wrong for another; requests for a team rewritten with a user's replayed id.
+
+**Action:** one namespace per type, each limited to its own requests with `url_pattern` (and `methods` when only some verbs return the id):
+
+```
+create_id_mapping(profile_id, source="body", json_path="$.id", namespace="user_id",
+                  url_pattern="/api/users(/|\\?|$)")
+create_id_mapping(profile_id, source="body", json_path="$.id", namespace="team_id",
+                  url_pattern="/api/teams(/|\\?|$)", methods=["GET", "POST"])
+```
+
+- `url_pattern` matches the **recorded request URL**, the same string as a filter rule's `url_pattern`: the path and query in reverse mode (the default), the absolute URL (`https://host/api/...`) in forward mode. **Don't anchor with `^/`** — it never matches a forward-mode recording. Anchor the end instead (`/api/users/\d+$`, or `(/|\?|$)` after the resource name).
+- `methods` match case-insensitively. Omitting either field means no restriction.
+- Pair each namespace with its own transformation rule (same namespace), as always.
+- Ignore `condition` on mapping rules: it is deprecated, never had any effect, and the API drops it. Use `methods`/`url_pattern`.
+
 ### Lists That Come Back in a Different Order (Collections)
 
 Arrays pair by position. When a list endpoint returns the same records in a different order (no `ORDER BY`, hash maps), every element is a delta, and an ID mapping on `$.data[*].id` learns the **wrong** pairs, so later requests for one record are rewritten to another. Signs: `$.data[N].*` deltas whose recorded and replayed values appear at other indexes of the same response; follow-up requests by id returning the wrong record.

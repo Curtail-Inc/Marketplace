@@ -218,7 +218,9 @@ GET /posts/xyz-789/comments
 create_id_mapping(
   profile_id="prof_abc123...",  # Profile to add mapping to
   json_path="$.items[*].id",     # JSONPath where IDs appear
-  namespace="item-ids"            # Optional: groups related IDs
+  namespace="item-ids",           # Optional: groups related IDs
+  url_pattern="/api/items(/|\\?|$)",  # Optional: learn only from these recorded URLs
+  methods=["GET"]                 # Optional: learn only from these methods
 )
 ```
 
@@ -256,6 +258,33 @@ create_id_mapping(json_path="/html/head[*]/link[*]/@href", namespace="asset-hash
 - Mapping learned at one path applies to all paths in namespace
 - Consistent handling of related identifiers
 - Easier to reason about mappings
+
+### Limiting a Rule to Some Requests (`url_pattern`, `methods`)
+
+An extract rule learns from every response that has its path. That goes wrong
+when two resource types share a field name and their IDs collide, which
+sequential integer IDs always do: `GET /api/users/5` and `GET /api/teams/5`
+both return `{"id": 5}`, replayed as different numbers. A single `$.id` rule
+records `5` twice, and the team's pair overwrites the user's.
+
+Give each type its own namespace, limited to its own requests:
+
+```python
+create_id_mapping(json_path="$.id", namespace="user-ids", url_pattern="/api/users(/|\\?|$)")
+create_id_mapping(json_path="$.id", namespace="team-ids", url_pattern="/api/teams(/|\\?|$)")
+```
+
+- `url_pattern` is a regex the **recorded request URL** must match — the same
+  string a filter rule's `url_pattern` and a collection's `url_pattern` match.
+  It is the path and query in reverse mode (the default) and the absolute URL
+  (`https://host/api/users/5`) in forward mode, so **don't anchor it with
+  `^/`**: leave the start unanchored and anchor the end.
+- `methods` lists HTTP methods, matched case-insensitively (e.g. only `POST`
+  responses carry the created id).
+- Omitting either means no restriction. A rule learns from a response only when
+  its request passes both.
+- `condition` on a mapping rule is deprecated and was never evaluated; the API
+  drops it. Use these fields instead.
 
 ---
 
@@ -395,6 +424,7 @@ create_id_mapping(
 **Fix:** Make JSONPath more specific
 - Change `$..id` → `$.users[*].id`
 - Add namespace to separate different ID types
+- Add a `url_pattern` (and `methods`) so each namespace learns only from its own endpoints
 
 ### Records in a List Map to the Wrong Records
 
