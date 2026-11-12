@@ -25,6 +25,8 @@ You are analyzing replay deltas to identify bugs in API implementations. ReGrade
 - `apply_profile_to_replay` — Apply rules retroactively
 - `batch_update_deltas`, `list_delta_labels` — One-off labeling
 
+Argument conventions: an argument a tool does not declare is refused, naming the one it most likely meant (`sort_by` → `sort`, `offset` → `cursor`): fix the name and call again. Lists (`list_recordings`, `list_replays`, `list_profiles`) print how many match (`# Replays (50 of 132)`); page with `limit` (at most 200) and pass the `cursor` a page prints to get the next. Sorted tools (the lists, `query_deltas`, `analyze_replay_performance`) take `sort` and `order` (`asc`/`desc`).
+
 ## CRITICAL PRINCIPLE: Never Assume "Data Changed"
 
 **ReGrade compares IDENTICAL DATA across DIFFERENT SOFTWARE VERSIONS.**
