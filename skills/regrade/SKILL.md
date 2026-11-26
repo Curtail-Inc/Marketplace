@@ -237,6 +237,8 @@ RIGHT: "^\\$\\.posts\\[\\d+\\]$"
 ```
 Escape the `$`: a pattern is a regex, where a bare leading `$` means end of input. A pattern starting with an unescaped `$` (such as `$.created_at` pasted from `query_deltas`) is rejected at save time, and the error gives the escaped form.
 
+Preview a rule before adding it: `query_deltas(replay_id=..., match={...})` takes the rule's `match_conditions` and lists exactly the deltas `apply_profile_to_replay` would act on (the same evaluation, so the same regex rules apply).
+
 **Debug workflow:**
 1. Check actual paths: `query_deltas(unlabeled_only=true, group_by="path")`
 2. Create rule → `apply_profile_to_replay` → check if deltas got labeled
